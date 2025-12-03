@@ -99,11 +99,11 @@ function update_panel() {
                 activate_python_venv
                 if [ "$USE_VENV" == "310" ];then
                     install_python310
-                    pip install -U --no-deps --force-reinstall git+https://github.com/hiddify/HiddifyPanel@${package_mode}
-                    pip install git+https://github.com/hiddify/HiddifyPanel@${package_mode}
+                    pip install -U --no-deps --force-reinstall git+https://github.com/RioTwWks/hiddifypanel@${package_mode}
+                    pip install git+https://github.com/RioTwWks/hiddifypanel@${package_mode}
                 else
-                    uv pip install -U --no-deps --force-reinstall git+https://github.com/hiddify/HiddifyPanel@${package_mode}
-                    uv pip install git+https://github.com/hiddify/HiddifyPanel@${package_mode}
+                    uv pip install -U --no-deps --force-reinstall git+https://github.com/RioTwWks/hiddifypanel@${package_mode}
+                    uv pip install git+https://github.com/RioTwWks/hiddifypanel@${package_mode}
                 fi
             else 
                install_python310
@@ -126,8 +126,8 @@ function update_panel() {
                
                 disable_panel_services
                 
-                uv pip install -U --no-deps --force-reinstall git+https://github.com/hiddify/HiddifyPanel
-                uv pip install git+https://github.com/hiddify/HiddifyPanel
+                uv pip install -U --no-deps --force-reinstall git+https://github.com/RioTwWks/hiddifypanel
+                uv pip install git+https://github.com/RioTwWks/hiddifypanel
                 panel_path=$(hiddifypanel_path)
                 echo "setting $latest in $panel_path/VERSION"
                 echo $latest > $panel_path/VERSION
@@ -197,7 +197,7 @@ function update_config() {
             update_progress "Updating..." "Hiddify Config from $current_config_version to $latest" 60
             export HIDDIFY_DISABLE_UPDATE=true
             #update_from_github "hiddify-manager.tar.gz" "https://github.com/hiddify/Hiddify-Manager/archive/refs/tags/${package_mode}.tar.gz" $latest
-            update_from_github "hiddify-manager.zip" "https://github.com/hiddify/Hiddify-Manager/releases/download/${package_mode}/hiddify-manager.zip" $latest
+            update_from_github "hiddify-manager.zip" "https://github.com/RioTwWks/Hiddify-Manager/releases/download/${package_mode}/hiddify-manager.zip" $latest
             update_progress "Updated..." "Hiddify Config to $latest" 100
             return 0
         ;;
@@ -206,7 +206,7 @@ function update_config() {
             echo "DEVELOP: Current Config Version=$current_config_version -- Latest=$latest"
             if [[ "$force" == "true" || "$latest" != "$current_config_version" ]]; then
                 update_progress "Updating..." "Hiddify Config from $current_config_version to $latest" 60
-                update_from_github "hiddify-manager.tar.gz" "https://github.com/hiddify/hiddify-manager/archive/refs/heads/dev.tar.gz" $latest
+                update_from_github "hiddify-manager.tar.gz" "https://github.com/RioTwWks/Hiddify-Manager/archive/refs/heads/dev.tar.gz" $latest
                 
                 update_progress "Updated..." "Hiddify Config to $latest" 100
                 return 0
@@ -217,7 +217,7 @@ function update_config() {
             echo "BETA: Current Config Version=$current_config_version -- Latest=$latest"
             if [[ "$force" == "true" || "$latest" != "$current_config_version" ]]; then
                 update_progress "Updating..." "Hiddify Config from $current_config_version to $latest" 60
-                update_from_github "hiddify-manager.zip" "https://github.com/hiddify/hiddify-manager/releases/download/v$latest/hiddify-manager.zip"
+                update_from_github "hiddify-manager.zip" "https://github.com/RioTwWks/Hiddify-Manager/releases/download/v$latest/hiddify-manager.zip"
                 update_progress "Updated..." "Hiddify Config to $latest" 100
                 return 0
             fi
