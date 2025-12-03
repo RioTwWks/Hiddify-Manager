@@ -107,8 +107,8 @@ function update_panel() {
                 fi
             else 
                install_python310
-               pip3 install -U --no-deps --force-reinstall git+https://github.com/hiddify/HiddifyPanel@${package_mode}
-               pip3 install git+https://github.com/hiddify/HiddifyPanel@${package_mode}
+               pip3 install -U --no-deps --force-reinstall git+https://github.com/RioTwWks/HiddifyPanel@${package_mode}
+               pip3 install git+https://github.com/RioTwWks/HiddifyPanel@${package_mode}
             fi
             update_progress "Updated..." "Hiddify Panel to ${package_mode}" 50
             return 0
@@ -196,7 +196,7 @@ function update_config() {
         v*)
             update_progress "Updating..." "Hiddify Config from $current_config_version to $latest" 60
             export HIDDIFY_DISABLE_UPDATE=true
-            #update_from_github "hiddify-manager.tar.gz" "https://github.com/hiddify/Hiddify-Manager/archive/refs/tags/${package_mode}.tar.gz" $latest
+            #update_from_github "hiddify-manager.tar.gz" "https://github.com/RioTwWks/Hiddify-Manager/archive/refs/tags/${package_mode}.tar.gz" $latest
             update_from_github "hiddify-manager.zip" "https://github.com/RioTwWks/Hiddify-Manager/releases/download/${package_mode}/hiddify-manager.zip" $latest
             update_progress "Updated..." "Hiddify Config to $latest" 100
             return 0
@@ -229,7 +229,7 @@ function update_config() {
             echo "RELEASE: Current Config Version=$current_config_version -- Latest=$latest"
             if [[ "$force" == "true" || "$latest" != "$current_config_version" ]]; then
                 update_progress "Updating..." "Hiddify Config from $current_config_version to $latest" 60
-                update_from_github "hiddify-manager.zip" "https://github.com/hiddify/hiddify-manager/releases/latest/download/hiddify-manager.zip"
+                update_from_github "hiddify-manager.zip" "https://github.com/RioTwWks/hiddify-manager/releases/latest/download/hiddify-manager.zip"
                 update_progress "Updated..." "Hiddify Config to $latest" 100
                 return 0
             fi

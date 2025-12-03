@@ -2,7 +2,7 @@
 # Before Anything Else...
 We are looking for contributors for this project. Please send email to hiddify@gmail.com
 ```
-git clone --recurse-submodules -j8 git://github.com/hiddify/hiddify-manager.git
+git clone --recurse-submodules -j8 git://github.com/RioTwWks/hiddify-manager.git
 
 ```
 Basic tutorial on how to contibute to HiddifyManager is [here](https://hiddify.com/manager/contribution/How-to-contribute-to-this-project/)
@@ -49,7 +49,7 @@ This direcotry contails installation/initialization scripts of the [Sing-box](ht
 The configs directory contains Sing-box's config files, which are Jinja2 (.j2) files. These config files are dynamically generated based on the panel configurations.
 
 #### ```/hiddify-panel/```
-This directory contains installation scripts of the [Hiddify Panel](https://github.com/hiddify/HiddifyPanel).
+This directory contains installation scripts of the [Hiddify Panel](https://github.com/RioTwWks/HiddifyPanel).
 
 #### ```/other/```
 This directory contains some scripts for installing and initialization other tools that the Hiddify needs:

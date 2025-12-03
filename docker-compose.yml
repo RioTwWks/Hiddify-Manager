@@ -5,16 +5,16 @@ services:
     build: .
 
     #latest release version
-    #image: ghcr.io/hiddify/hiddify-manager:latest
+    #image: ghcr.io/RioTwWks/hiddify-manager:latest
 
     #latest beta version
-    #image: ghcr.io/hiddify/hiddify-manager:beta
+    #image: ghcr.io/RioTwWks/hiddify-manager:beta
 
     #latest build of current development
-    # image: ghcr.io/hiddify/hiddify-manager:dev
+    # image: ghcr.io/RioTwWks/hiddify-manager:dev
 
     #specific version
-    #image: ghcr.io/hiddify/hiddify-manager:v10.80.0
+    #image: ghcr.io/RioTwWks/hiddify-manager:v10.80.0
     ports:
       - "80:80"
       - "443:443"
