@@ -2,10 +2,10 @@
 services:
   hiddify:
     #only for local build and development
-    build: .
+    #build: .
 
     #latest release version
-    #image: ghcr.io/RioTwWks/hiddify-manager:latest
+    image: ghcr.io/riotwwks/hiddify-manager:latest
 
     #latest beta version
     #image: ghcr.io/RioTwWks/hiddify-manager:beta
