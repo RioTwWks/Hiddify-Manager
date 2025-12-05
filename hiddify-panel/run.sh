@@ -23,13 +23,21 @@ if [ -z "${REDIS_URI_MAIN}" ]; then
     if [ -z "${REDIS_PASS}" ];then
         REDIS_PASS=$(grep '^requirepass' "../other/redis/redis.conf" 2>/dev/null | awk '{print $2}')
     fi
+    # Detect if running in Docker (check for HIDDIFY_DISABLE_UPDATE or /.dockerenv)
+    if [ -n "${HIDDIFY_DISABLE_UPDATE}" ] || [ -f "/.dockerenv" ]; then
+        # In Docker, use 'redis' as hostname (container name)
+        REDIS_HOST="redis"
+    else
+        # Local installation, use localhost
+        REDIS_HOST="127.0.0.1"
+    fi
     # If REDIS_PASS is empty or not set, use Redis without password
     if [ -n "${REDIS_PASS}" ]; then
-        REDIS_URI_MAIN="redis://:${REDIS_PASS}@127.0.0.1:6379/0"
-        REDIS_URI_SSH="redis://:${REDIS_PASS}@127.0.0.1:6379/1"
+        REDIS_URI_MAIN="redis://:${REDIS_PASS}@${REDIS_HOST}:6379/0"
+        REDIS_URI_SSH="redis://:${REDIS_PASS}@${REDIS_HOST}:6379/1"
     else
-        REDIS_URI_MAIN="redis://127.0.0.1:6379/0"
-        REDIS_URI_SSH="redis://127.0.0.1:6379/1"
+        REDIS_URI_MAIN="redis://${REDIS_HOST}:6379/0"
+        REDIS_URI_SSH="redis://${REDIS_HOST}:6379/1"
     fi
 fi
 

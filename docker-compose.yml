@@ -25,12 +25,11 @@ services:
        - ./docker-data/:/hiddify-data/
     env_file:
       - ./docker.env
-    #environment:
-      #REDIS_PASSWORD used if REDIS_URI_MAIN or REDIS_URI_SSH is not set
-      #MYSQL_PASSWORD used if SQLALCHEMY_DATABASE_URI is not set
-      #REDIS_URI_MAIN: 'redis://:${REDIS_PASSWORD}@redis:6379/0' 
-      #REDIS_URI_SSH: 'redis://:${REDIS_PASSWORD}@redis:6379/1'
-      #SQLALCHEMY_DATABASE_URI: 'mysql+mysqldb://hiddifypanel:${MYSQL_PASSWORD}@mariadb/hiddifypanel?charset=utf8mb4'
+    environment:
+      - HIDDIFY_DISABLE_UPDATE=true
+      # REDIS_URI_MAIN and REDIS_URI_SSH will be set by docker-init.sh based on REDIS_PASSWORD
+      # If REDIS_PASSWORD is not set or is "your-strong-password", Redis runs without password
+      # and docker-init.sh sets REDIS_URI_MAIN=redis://redis:6379/0 (without password)
     #network_mode: host
     depends_on: 
       - mariadb

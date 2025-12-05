@@ -23,6 +23,11 @@ if [ -z "$REDIS_URI_SSH" ]; then
   fi
 fi
 
+# Export variables to environment file so they're available to all processes
+# This ensures hiddify-panel/run.sh can access them
+echo "export REDIS_URI_MAIN=\"$REDIS_URI_MAIN\"" >> /etc/environment
+echo "export REDIS_URI_SSH=\"$REDIS_URI_SSH\"" >> /etc/environment
+
 # Check and set SQLALCHEMY_DATABASE_URI
 if [ -z "$SQLALCHEMY_DATABASE_URI" ]; then
   if [ -z "$MYSQL_PASSWORD" ]; then
