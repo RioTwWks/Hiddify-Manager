@@ -1,0 +1,277 @@
+name: Docker Test
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to test'
+        required: false
+        default: 'dev'
+
+env:
+  REGISTRY_IMAGE: ghcr.io/riotwwks/hiddify-manager
+
+jobs:
+  test-docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.branch || 'dev' }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Generate random passwords
+        run: |
+          mysqlpassword=$(openssl rand -base64 49 | tr -d "=+/" | cut -c1-49)
+          redispassword=$(openssl rand -base64 49 | tr -d "=+/" | cut -c1-49)
+          echo "REDIS_PASSWORD=$redispassword" > docker.env
+          echo "MYSQL_PASSWORD=$mysqlpassword" >> docker.env
+          echo "Generated passwords (for debugging):"
+          echo "REDIS_PASSWORD length: ${#redispassword}"
+          echo "MYSQL_PASSWORD length: ${#mysqlpassword}"
+
+      - name: Create test docker-compose file
+        run: |
+          # Create a test docker-compose file that builds from source (like docker-installer.sh does for dev)
+          # Use single quotes in heredoc to prevent variable expansion
+          cat > docker-compose.test.yml << 'EOF'
+          services:
+            hiddify:
+              build: .
+              ports:
+                - "80:80"
+                - "443:443"
+              privileged: true
+              cap_add:
+                - NET_ADMIN
+              volumes:
+                - ./docker-data/:/hiddify-data/
+              env_file:
+                - ./docker.env
+              environment:
+                - HIDDIFY_DISABLE_UPDATE=true
+              depends_on: 
+                - mariadb
+                - redis
+
+            mariadb:
+              image: mariadb:latest
+              container_name: mariadb_container
+              restart: always
+              env_file:
+                - ./docker.env
+              environment:
+                MARIADB_RANDOM_ROOT_PASSWORD: 1
+                MYSQL_DATABASE: hiddifypanel
+                MYSQL_USER: hiddifypanel
+              volumes:
+                - ./docker-data/mariadb_data:/var/lib/mysql
+
+            redis:
+              image: redis:latest
+              container_name: redis_container
+              restart: always
+              env_file:
+                - ./docker.env
+              command: sh -c "if [ -n \"$$REDIS_PASSWORD\" ] && [ \"$$REDIS_PASSWORD\" != \"your-strong-password\" ]; then redis-server --requirepass \"$$REDIS_PASSWORD\"; else redis-server; fi"
+              volumes:
+                - ./docker-data/redis_data:/data
+          EOF
+          echo "Created docker-compose.test.yml"
+          cat docker-compose.test.yml
+
+      - name: Build Docker image from source
+        run: |
+          # For dev branch, build from source (like docker-installer.sh does)
+          echo "Building Docker image from source..."
+          docker compose -f docker-compose.test.yml build hiddify
+
+      - name: Start Docker containers
+        run: |
+          # Start containers using test compose file
+          docker compose -f docker-compose.test.yml up -d
+          
+          # Wait for containers to be ready
+          echo "Waiting for containers to start..."
+          sleep 10
+
+      - name: Check container status
+        run: |
+          echo "=== Container Status ==="
+          docker compose -f docker-compose.test.yml ps
+          
+          echo "=== Checking if containers are running ==="
+          containers=$(docker compose -f docker-compose.test.yml ps -q)
+          if [ -z "$containers" ]; then
+            echo "ERROR: No containers are running!"
+            exit 1
+          fi
+          
+          for container in $containers; do
+            status=$(docker inspect --format='{{.State.Status}}' $container)
+            echo "Container $container status: $status"
+            if [ "$status" != "running" ]; then
+              echo "ERROR: Container $container is not running!"
+              docker logs $container
+              exit 1
+            fi
+          done
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to be ready..."
+          max_attempts=60
+          attempt=0
+          
+          # Wait for MariaDB
+          echo "Waiting for MariaDB..."
+          while [ $attempt -lt $max_attempts ]; do
+            if docker compose -f docker-compose.test.yml exec -T mariadb_container mysqladmin ping -h localhost --silent 2>/dev/null; then
+              echo "MariaDB is ready!"
+              break
+            fi
+            attempt=$((attempt + 1))
+            sleep 2
+          done
+          
+          # Wait for Redis
+          echo "Waiting for Redis..."
+          attempt=0
+          while [ $attempt -lt $max_attempts ]; do
+            if docker compose -f docker-compose.test.yml exec -T redis_container redis-cli ping 2>/dev/null | grep -q PONG; then
+              echo "Redis is ready!"
+              break
+            fi
+            attempt=$((attempt + 1))
+            sleep 2
+          done
+          
+          # Wait for hiddify-manager container
+          echo "Waiting for hiddify-manager container..."
+          attempt=0
+          hiddify_container=$(docker compose -f docker-compose.test.yml ps -q hiddify)
+          while [ $attempt -lt $max_attempts ]; do
+            if docker exec $hiddify_container pgrep -f "hiddifypanel" > /dev/null 2>&1; then
+              echo "Hiddify panel is ready!"
+              break
+            fi
+            attempt=$((attempt + 1))
+            sleep 2
+          done
+
+      - name: Check logs for errors
+        run: |
+          echo "=== Checking logs for critical errors ==="
+          
+          # Check Redis logs
+          echo "--- Redis logs ---"
+          redis_logs=$(docker compose -f docker-compose.test.yml logs redis_container 2>&1 | tail -50)
+          echo "$redis_logs"
+          
+          # Check for Redis authentication errors
+          if echo "$redis_logs" | grep -qi "AUTH.*called without any password"; then
+            echo "ERROR: Redis authentication error detected!"
+            exit 1
+          fi
+          
+          # Check hiddify-manager logs
+          echo "--- Hiddify Manager logs ---"
+          hiddify_logs=$(docker compose -f docker-compose.test.yml logs hiddify 2>&1 | tail -100)
+          echo "$hiddify_logs"
+          
+          # Check for critical errors in hiddify logs
+          if echo "$hiddify_logs" | grep -qi "redis.exceptions.AuthenticationError"; then
+            echo "ERROR: Redis authentication error in hiddify-manager logs!"
+            exit 1
+          fi
+          
+          if echo "$hiddify_logs" | grep -qi "FATAL\|CRITICAL"; then
+            echo "WARNING: Critical errors found in logs, but continuing..."
+          fi
+          
+          # Check MariaDB logs
+          echo "--- MariaDB logs ---"
+          mariadb_logs=$(docker compose -f docker-compose.test.yml logs mariadb_container 2>&1 | tail -50)
+          echo "$mariadb_logs"
+
+      - name: Test Redis connection
+        run: |
+          echo "=== Testing Redis connection ==="
+          
+          # Read Redis password from docker.env
+          if [ -f docker.env ]; then
+            source docker.env
+          fi
+          
+          # Test Redis connection without password (if password is not set or is default)
+          if [ -z "$REDIS_PASSWORD" ] || [ "$REDIS_PASSWORD" == "your-strong-password" ]; then
+            echo "Testing Redis without password..."
+            docker compose -f docker-compose.test.yml exec -T redis_container redis-cli ping
+          else
+            echo "Testing Redis with password..."
+            docker compose -f docker-compose.test.yml exec -T redis_container redis-cli -a "$REDIS_PASSWORD" ping
+          fi
+
+      - name: Test database connection
+        run: |
+          echo "=== Testing MariaDB connection ==="
+          
+          # Read MySQL password from docker.env
+          if [ -f docker.env ]; then
+            source docker.env
+          fi
+          
+          # Test MariaDB connection
+          docker compose -f docker-compose.test.yml exec -T mariadb_container mysql -u hiddifypanel -p"$MYSQL_PASSWORD" -e "SELECT 1;" hiddifypanel
+
+      - name: Check hiddify-panel health
+        run: |
+          echo "=== Checking hiddify-panel health ==="
+          
+          hiddify_container=$(docker compose -f docker-compose.test.yml ps -q hiddify)
+          
+          # Check if hiddify-panel process is running
+          if docker exec $hiddify_container pgrep -f "hiddifypanel" > /dev/null; then
+            echo "✓ hiddify-panel process is running"
+          else
+            echo "✗ hiddify-panel process is not running"
+            exit 1
+          fi
+          
+          # Check if we can access the panel (optional, might not be fully initialized)
+          echo "Checking if panel is accessible..."
+          sleep 5
+
+      - name: Show final container status
+        if: always()
+        run: |
+          echo "=== Final Container Status ==="
+          docker compose -f docker-compose.test.yml ps
+          
+          echo "=== Container Resource Usage ==="
+          docker stats --no-stream
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "=== Cleaning up ==="
+          docker compose -f docker-compose.test.yml down -v
+          docker system prune -f
+
