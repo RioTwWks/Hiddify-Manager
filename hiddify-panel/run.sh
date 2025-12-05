@@ -21,10 +21,16 @@ echo "SQLALCHEMY_DATABASE_URI ='$SQLALCHEMY_DATABASE_URI'" >>app.cfg
 sed -i '/^REDIS_URI/d' app.cfg
 if [ -z "${REDIS_URI_MAIN}" ]; then
     if [ -z "${REDIS_PASS}" ];then
-        REDIS_PASS=$(grep '^requirepass' "../other/redis/redis.conf" | awk '{print $2}')
+        REDIS_PASS=$(grep '^requirepass' "../other/redis/redis.conf" 2>/dev/null | awk '{print $2}')
     fi
-    REDIS_URI_MAIN="redis://:${REDIS_PASS}@127.0.0.1:6379/0"
-    REDIS_URI_SSH="redis://:${REDIS_PASS}@127.0.0.1:6379/1"
+    # If REDIS_PASS is empty or not set, use Redis without password
+    if [ -n "${REDIS_PASS}" ]; then
+        REDIS_URI_MAIN="redis://:${REDIS_PASS}@127.0.0.1:6379/0"
+        REDIS_URI_SSH="redis://:${REDIS_PASS}@127.0.0.1:6379/1"
+    else
+        REDIS_URI_MAIN="redis://127.0.0.1:6379/0"
+        REDIS_URI_SSH="redis://127.0.0.1:6379/1"
+    fi
 fi
 
 echo "REDIS_URI_MAIN = '$REDIS_URI_MAIN'">>app.cfg
