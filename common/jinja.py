@@ -75,8 +75,11 @@ def render(template_path):
             output_file.write(str(rendered_content))
 
         input_stat = os.stat(template_path)
-        os.chmod(output_file_path, input_stat.st_mode)
-        # os.chmod(output_file_path, 0o600)
+        # For .toml files (like mtg.toml), set permissions to 644 so DynamicUser can read them
+        if output_file_path.endswith('.toml'):
+            os.chmod(output_file_path, 0o644)
+        else:
+            os.chmod(output_file_path, input_stat.st_mode)
         os.chown(output_file_path, input_stat.st_uid, input_stat.st_gid)
     except Exception as e:
         print(f"Error rendering {template_path}: {e}", file=sys.stderr)
