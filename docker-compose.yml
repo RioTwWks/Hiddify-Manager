@@ -55,7 +55,7 @@ services:
     restart: always
     env_file:
       - path: ./docker.env
-    command: sh -c "redis-server --requirepass \"$REDIS_PASSWORD\""
+    command: sh -c "if [ -n \"$REDIS_PASSWORD\" ] && [ \"$REDIS_PASSWORD\" != \"your-strong-password\" ]; then redis-server --requirepass \"$REDIS_PASSWORD\"; else redis-server; fi"
     volumes:
       - ./docker-data/redis_data:/data                # Persistent storage for Redis data
     
