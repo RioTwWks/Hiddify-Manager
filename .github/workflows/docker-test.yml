@@ -39,10 +39,14 @@ jobs:
 
       - name: Generate random passwords
         run: |
-          mysqlpassword=$(openssl rand -base64 49 | tr -d "=+/" | cut -c1-49)
-          redispassword=$(openssl rand -base64 49 | tr -d "=+/" | cut -c1-49)
-          echo "REDIS_PASSWORD=$redispassword" > docker.env
-          echo "MYSQL_PASSWORD=$mysqlpassword" >> docker.env
+          # Generate safe passwords (alphanumeric only to avoid shell interpretation issues)
+          mysqlpassword=$(openssl rand -hex 24)
+          redispassword=$(openssl rand -hex 24)
+          # Write passwords to docker.env with proper quoting
+          cat > docker.env << EOF
+          REDIS_PASSWORD=$redispassword
+          MYSQL_PASSWORD=$mysqlpassword
+          EOF
           echo "Generated passwords (for debugging):"
           echo "REDIS_PASSWORD length: ${#redispassword}"
           echo "MYSQL_PASSWORD length: ${#mysqlpassword}"
@@ -215,9 +219,10 @@ jobs:
         run: |
           echo "=== Testing Redis connection ==="
           
-          # Read Redis password from docker.env
+          # Read Redis password from docker.env safely
           if [ -f docker.env ]; then
-            source docker.env
+            REDIS_PASSWORD=$(grep "^REDIS_PASSWORD=" docker.env | cut -d'=' -f2- | tr -d '\r\n')
+            MYSQL_PASSWORD=$(grep "^MYSQL_PASSWORD=" docker.env | cut -d'=' -f2- | tr -d '\r\n')
           fi
           
           # Test Redis connection without password (if password is not set or is default)
@@ -233,9 +238,9 @@ jobs:
         run: |
           echo "=== Testing MariaDB connection ==="
           
-          # Read MySQL password from docker.env
+          # Read MySQL password from docker.env safely
           if [ -f docker.env ]; then
-            source docker.env
+            MYSQL_PASSWORD=$(grep "^MYSQL_PASSWORD=" docker.env | cut -d'=' -f2- | tr -d '\r\n')
           fi
           
           # Test MariaDB connection
