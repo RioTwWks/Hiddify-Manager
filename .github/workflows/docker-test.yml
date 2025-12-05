@@ -221,17 +221,48 @@ jobs:
           
           # Read Redis password from docker.env safely
           if [ -f docker.env ]; then
-            REDIS_PASSWORD=$(grep "^REDIS_PASSWORD=" docker.env | cut -d'=' -f2- | tr -d '\r\n')
-            MYSQL_PASSWORD=$(grep "^MYSQL_PASSWORD=" docker.env | cut -d'=' -f2- | tr -d '\r\n')
+            REDIS_PASSWORD=$(grep "^REDIS_PASSWORD=" docker.env | cut -d'=' -f2- | tr -d '\r\n' || echo "")
+            MYSQL_PASSWORD=$(grep "^MYSQL_PASSWORD=" docker.env | cut -d'=' -f2- | tr -d '\r\n' || echo "")
           fi
           
-          # Test Redis connection without password (if password is not set or is default)
-          if [ -z "$REDIS_PASSWORD" ] || [ "$REDIS_PASSWORD" == "your-strong-password" ]; then
-            echo "Testing Redis without password..."
-            docker compose -f docker-compose.test.yml exec -T redis_container redis-cli ping
+          echo "REDIS_PASSWORD is set: $([ -n "$REDIS_PASSWORD" ] && echo "yes (length: ${#REDIS_PASSWORD})" || echo "no")"
+          
+          # Check if Redis is running
+          if ! docker compose -f docker-compose.test.yml ps redis_container | grep -q "Up"; then
+            echo "✗ Redis container is not running!"
+            docker compose -f docker-compose.test.yml logs redis_container | tail -30
+            exit 1
+          fi
+          
+          # Test Redis connection - try both with and without password
+          echo "Attempting Redis connection..."
+          
+          # First, try without password
+          echo "Trying connection without password..."
+          REDIS_RESPONSE=$(docker compose -f docker-compose.test.yml exec -T redis_container redis-cli ping 2>&1)
+          if echo "$REDIS_RESPONSE" | grep -q "PONG"; then
+            echo "✓ Redis connection successful (without password)"
+          # Then try with password if password is set and not default
+          elif [ -n "$REDIS_PASSWORD" ] && [ "$REDIS_PASSWORD" != "your-strong-password" ]; then
+            echo "Trying connection with password..."
+            REDIS_RESPONSE=$(docker compose -f docker-compose.test.yml exec -T redis_container redis-cli --no-auth-warning -a "$REDIS_PASSWORD" ping 2>&1)
+            if echo "$REDIS_RESPONSE" | grep -q "PONG"; then
+              echo "✓ Redis connection successful (with password)"
+            else
+              echo "✗ Redis connection failed with password"
+              echo "Response: $REDIS_RESPONSE"
+              echo "Checking Redis configuration..."
+              docker compose -f docker-compose.test.yml exec -T redis_container redis-cli CONFIG GET requirepass 2>&1 || true
+              echo "Checking Redis logs..."
+              docker compose -f docker-compose.test.yml logs redis_container | tail -30
+              exit 1
+            fi
           else
-            echo "Testing Redis with password..."
-            docker compose -f docker-compose.test.yml exec -T redis_container redis-cli -a "$REDIS_PASSWORD" ping
+            echo "✗ Redis connection failed (no password set and connection without password failed)"
+            echo "Response: $REDIS_RESPONSE"
+            echo "Checking Redis logs..."
+            docker compose -f docker-compose.test.yml logs redis_container | tail -30
+            exit 1
           fi
 
       - name: Test database connection
