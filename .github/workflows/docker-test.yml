@@ -96,7 +96,18 @@ jobs:
               restart: always
               env_file:
                 - ./docker.env
-              command: sh -c "if [ -n \"$$REDIS_PASSWORD\" ] && [ \"$$REDIS_PASSWORD\" != \"your-strong-password\" ]; then redis-server --requirepass \"$$REDIS_PASSWORD\"; else redis-server; fi"
+              # Run Redis without password for CI tests (when REDIS_PASSWORD=your-strong-password)
+              # In production, set a strong password and Redis will use it
+              command: >
+                sh -c "
+                if [ -n \"$$REDIS_PASSWORD\" ] && [ \"$$REDIS_PASSWORD\" != \"your-strong-password\" ]; then
+                  echo 'Starting Redis with password';
+                  redis-server --requirepass \"$$REDIS_PASSWORD\";
+                else
+                  echo 'Starting Redis without password';
+                  redis-server;
+                fi
+                "
               volumes:
                 - ./docker-data/redis_data:/data
           EOF
