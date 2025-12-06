@@ -53,6 +53,12 @@ DO_NOT_INSTALL=true ./install.sh docker --no-gui $@
 # Fix package hashes and install missing components after installation
 echo "Applying post-installation fixes..."
 
+# Fix jinja.py indentation error if present
+if grep -q "^        os\.chmod(output_file_path, input_stat\.st_mode)$" common/jinja.py 2>/dev/null; then
+  echo "Fixing jinja.py indentation error..."
+  sed -i "82s/^        os\.chmod/            os.chmod/" common/jinja.py
+fi
+
 # Fix singbox hash in packages.lock if it's outdated
 if grep -q "singbox|1.8.8.h4|amd64.*7f1eae5d24543d91e0a2183aa5b63a256cc5b16874a1f8a5937860e882799c34" common/packages.lock 2>/dev/null; then
   echo "Updating singbox hash in packages.lock..."
