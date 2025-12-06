@@ -10,20 +10,34 @@ TAG=${1:-latest}
 detect_branch() {
     local branch="main"  # Default branch
     
-    # Try to detect branch from git repository
+    # Method 1: Try to detect branch from git repository (if script is run from cloned repo)
     if command -v git &>/dev/null; then
-        # Check if we're in a git repository
-        if git rev-parse --git-dir &>/dev/null; then
-            # Get current branch
-            local current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+        # Check if we're in a git repository (current dir or parent dirs)
+        local git_dir=""
+        local current_dir="$PWD"
+        
+        # Check current directory and parent directories
+        while [ -n "$current_dir" ] && [ "$current_dir" != "/" ]; do
+            if [ -d "$current_dir/.git" ]; then
+                git_dir="$current_dir"
+                break
+            fi
+            current_dir=$(dirname "$current_dir")
+        done
+        
+        if [ -n "$git_dir" ]; then
+            # Get current branch from git repository
+            local current_branch=$(cd "$git_dir" && git rev-parse --abbrev-ref HEAD 2>/dev/null)
             if [ -n "$current_branch" ] && [ "$current_branch" != "HEAD" ]; then
                 branch="$current_branch"
                 echo "Detected branch from git repository: $branch" >&2
+                echo "$branch"
+                return 0
             fi
         fi
     fi
     
-    # Try to detect branch from script URL (if downloaded via curl)
+    # Method 2: Try to detect branch from script URL (if downloaded via curl)
     # Check if script was downloaded from a specific branch URL
     if [ -n "$SCRIPT_SOURCE_URL" ]; then
         if echo "$SCRIPT_SOURCE_URL" | grep -qE '/blob/([^/]+)/|/tree/([^/]+)/'; then
@@ -31,10 +45,24 @@ detect_branch() {
             if [ -n "$url_branch" ]; then
                 branch="$url_branch"
                 echo "Detected branch from script URL: $branch" >&2
+                echo "$branch"
+                return 0
             fi
         fi
     fi
     
+    # Method 3: Try to detect from common curl patterns
+    # If script is run via: bash <(curl https://raw.githubusercontent.com/.../dev/...)
+    # We can't directly detect this, but we can check if BRANCH env var is set
+    if [ -n "$BRANCH" ]; then
+        branch="$BRANCH"
+        echo "Using branch from BRANCH environment variable: $branch" >&2
+        echo "$branch"
+        return 0
+    fi
+    
+    # Fallback to default
+    echo "Using default branch: $branch" >&2
     echo "$branch"
 }
 
@@ -80,4 +108,5 @@ docker compose pull
 docker compose up -d 
 
 # Follow the logs from the containers
+docker compose logs -f
 docker compose logs -f
