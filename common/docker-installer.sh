@@ -25,7 +25,8 @@ else
   # Create the 'hiddify-manager' directory
   mkdir hiddify-manager
   cd hiddify-manager
-  wget https://raw.githubusercontent.com/RioTwWks/Hiddify-Manager/refs/heads/main/docker-compose.yml
+  # Use dev branch for docker-compose.yml to get latest fixes
+  wget https://raw.githubusercontent.com/RioTwWks/Hiddify-Manager/refs/heads/dev/docker-compose.yml
 fi
 
 # Generate random passwords for MySQL and Redis
