@@ -54,7 +54,16 @@ services:
     restart: always
     env_file:
       - ./docker.env
-    command: sh -c "if [ -n \"$REDIS_PASSWORD\" ] && [ \"$REDIS_PASSWORD\" != \"your-strong-password\" ]; then redis-server --requirepass \"$REDIS_PASSWORD\"; else redis-server; fi"
+    # Use environment variable expansion in command
+    # Docker Compose expands variables from env_file before executing the command
+    command: >
+      sh -c "
+      if [ -n \"$$REDIS_PASSWORD\" ] && [ \"$$REDIS_PASSWORD\" != \"your-strong-password\" ]; then
+        redis-server --requirepass \"$$REDIS_PASSWORD\"
+      else
+        redis-server
+      fi
+      "
     volumes:
       - ./docker-data/redis_data:/data                # Persistent storage for Redis data
     
