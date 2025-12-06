@@ -19,6 +19,16 @@ fi
 echo "SQLALCHEMY_DATABASE_URI ='$SQLALCHEMY_DATABASE_URI'" >>app.cfg
 
 sed -i '/^REDIS_URI/d' app.cfg
+
+# In Docker, REDIS_URI_MAIN and REDIS_URI_SSH are set by docker-init.sh and exported to /etc/environment
+# Try to source /etc/environment to get these variables if they're not already set
+if [ -f "/etc/environment" ] && [ -z "${REDIS_URI_MAIN}" ]; then
+    # Source /etc/environment to get REDIS_URI_MAIN and REDIS_URI_SSH
+    set -a
+    source /etc/environment 2>/dev/null || true
+    set +a
+fi
+
 if [ -z "${REDIS_URI_MAIN}" ]; then
     if [ -z "${REDIS_PASS}" ];then
         REDIS_PASS=$(grep '^requirepass' "../other/redis/redis.conf" 2>/dev/null | awk '{print $2}')
