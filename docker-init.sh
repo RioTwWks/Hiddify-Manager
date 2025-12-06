@@ -6,7 +6,7 @@ rm -rf /opt/hiddify-manager/log/*.lock
 # Check and set REDIS_URI_MAIN
 if [ -z "$REDIS_URI_MAIN" ]; then
   if [ -n "$REDIS_PASSWORD" ] && [ "$REDIS_PASSWORD" != "your-strong-password" ]; then
-    export REDIS_URI_MAIN="redis://:${REDIS_PASSWORD}@redis:6379/0"
+  export REDIS_URI_MAIN="redis://:${REDIS_PASSWORD}@redis:6379/0"
   else
     # Redis without password
     export REDIS_URI_MAIN="redis://redis:6379/0"
