@@ -151,7 +151,7 @@ jobs:
           # Wait for MariaDB
           echo "Waiting for MariaDB..."
           while [ $attempt -lt $max_attempts ]; do
-            if docker compose -f docker-compose.test.yml exec -T mariadb_container mysqladmin ping -h localhost --silent 2>/dev/null; then
+            if docker compose -f docker-compose.test.yml exec -T mariadb mysqladmin ping -h localhost --silent 2>/dev/null; then
               echo "MariaDB is ready!"
               break
             fi
@@ -216,7 +216,7 @@ jobs:
           
           # Check MariaDB logs
           echo "--- MariaDB logs ---"
-          mariadb_logs=$(docker compose -f docker-compose.test.yml logs mariadb_container 2>&1 | tail -50)
+          mariadb_logs=$(docker compose -f docker-compose.test.yml logs mariadb 2>&1 | tail -50)
           echo "$mariadb_logs"
 
       - name: Test Redis connection
@@ -282,7 +282,7 @@ jobs:
           fi
           
           # Test MariaDB connection
-          docker compose -f docker-compose.test.yml exec -T mariadb_container mysql -u hiddifypanel -p"$MYSQL_PASSWORD" -e "SELECT 1;" hiddifypanel
+          docker compose -f docker-compose.test.yml exec -T mariadb mysql -u hiddifypanel -p"$MYSQL_PASSWORD" -e "SELECT 1;" hiddifypanel
 
       - name: Check hiddify-panel health
         run: |
