@@ -79,7 +79,7 @@ def render(template_path):
         if output_file_path.endswith('.toml'):
             os.chmod(output_file_path, 0o644)
         else:
-        os.chmod(output_file_path, input_stat.st_mode)
+            os.chmod(output_file_path, input_stat.st_mode)
         os.chown(output_file_path, input_stat.st_uid, input_stat.st_gid)
     except Exception as e:
         print(f"Error rendering {template_path}: {e}", file=sys.stderr)
