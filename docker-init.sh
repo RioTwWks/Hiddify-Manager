@@ -49,6 +49,56 @@ if [ $? -ne 0 ]; then
 fi
 
 DO_NOT_INSTALL=true ./install.sh docker --no-gui $@
+
+# Fix package hashes and install missing components after installation
+echo "Applying post-installation fixes..."
+
+# Fix singbox hash in packages.lock if it's outdated
+if grep -q "singbox|1.8.8.h4|amd64.*7f1eae5d24543d91e0a2183aa5b63a256cc5b16874a1f8a5937860e882799c34" common/packages.lock 2>/dev/null; then
+  echo "Updating singbox hash in packages.lock..."
+  sed -i "s|7f1eae5d24543d91e0a2183aa5b63a256cc5b16874a1f8a5937860e882799c34|298a6073500c708f056132d75bc06b50dbdcb84c413fd6c1132b7c71164016b3|" common/packages.lock
+fi
+
+# Install singbox if missing
+if [ ! -f singbox/sing-box ]; then
+  echo "Installing singbox..."
+  cd singbox && rm -f sb.zip && bash install.sh >/dev/null 2>&1 && cd ..
+fi
+
+# Create symlink for sing-box if missing
+if [ ! -f /usr/bin/sing-box ] && [ -f singbox/sing-box ]; then
+  echo "Creating sing-box symlink..."
+  ln -sf /opt/hiddify-manager/singbox/sing-box /usr/bin/sing-box
+fi
+
+# Fix obfs-server path in service file if needed
+if [ -f /etc/systemd/system/hiddify-ss-faketls.service ] && grep -q "^ExecStart=obfs-server" /etc/systemd/system/hiddify-ss-faketls.service; then
+  echo "Fixing obfs-server path in hiddify-ss-faketls.service..."
+  sed -i "s|^ExecStart=obfs-server|ExecStart=/usr/bin/obfs-server|" /etc/systemd/system/hiddify-ss-faketls.service
+fi
+
+# Install ssh-liberty-bridge if missing
+if [ ! -f other/ssh/ssh-liberty-bridge ]; then
+  echo "Installing ssh-liberty-bridge..."
+  cd other/ssh
+  curl -sL -o ssh-liberty-bridge "https://github.com/RioTwWks/ssh-liberty-bridge/releases/download/v1.3.0/ssh-liberty-bridge-amd64" 2>/dev/null || \
+    wget -q -O ssh-liberty-bridge "https://github.com/RioTwWks/ssh-liberty-bridge/releases/download/v1.3.0/ssh-liberty-bridge-amd64" 2>/dev/null
+  if [ -f ssh-liberty-bridge ]; then
+    chmod +x ssh-liberty-bridge
+    chown liberty-bridge:liberty-bridge ssh-liberty-bridge 2>/dev/null || true
+  fi
+  cd ../..
+fi
+
+# Start singbox manually if not running (systemd doesn't work well in Docker)
+if ! pgrep -f "sing-box.*run.*-C" >/dev/null 2>&1; then
+  echo "Starting singbox manually..."
+  cd singbox
+  nohup /usr/bin/sing-box run -C /opt/hiddify-manager/singbox/configs > /tmp/singbox.log 2>&1 &
+  cd ..
+  sleep 2
+fi
+
 ./status.sh --no-gui
 
 echo Hiddify is started!!!! in 5 seconds you will see the system logs
