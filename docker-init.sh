@@ -91,12 +91,26 @@ if [ ! -f other/ssh/ssh-liberty-bridge ]; then
 fi
 
 # Start singbox manually if not running (systemd doesn't work well in Docker)
-if ! pgrep -f "sing-box.*run.*-C" >/dev/null 2>&1; then
+# Kill any existing singbox processes first
+pkill -9 sing-box 2>/dev/null || true
+sleep 1
+
+# Start singbox and wait for it to be ready
+if [ -f /usr/bin/sing-box ] || [ -f singbox/sing-box ]; then
   echo "Starting singbox manually..."
   cd singbox
   nohup /usr/bin/sing-box run -C /opt/hiddify-manager/singbox/configs > /tmp/singbox.log 2>&1 &
   cd ..
-  sleep 2
+  
+  # Wait for singbox to start listening on port 10086
+  echo "Waiting for singbox to start..."
+  for i in {1..30}; do
+    if netstat -tln 2>/dev/null | grep -q ":10086 " || ss -tln 2>/dev/null | grep -q ":10086 "; then
+      echo "Singbox is ready on port 10086"
+      break
+    fi
+    sleep 1
+  done
 fi
 
 ./status.sh --no-gui
