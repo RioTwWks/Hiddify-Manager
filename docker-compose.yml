@@ -4,8 +4,11 @@ services:
     #only for local build and development
     #build: .
 
+    #dev branch test version
+    image: ghcr.io/riotwwks/hiddify-manager:v11.0.14_dev
+
     #latest release version
-    image: ghcr.io/riotwwks/hiddify-manager:latest
+    #image: ghcr.io/riotwwks/hiddify-manager:latest
 
     #latest beta version
     #image: ghcr.io/RioTwWks/hiddify-manager:beta
