@@ -151,7 +151,9 @@ jobs:
           # Wait for MariaDB
           echo "Waiting for MariaDB..."
           while [ $attempt -lt $max_attempts ]; do
-            if docker compose -f docker-compose.test.yml exec -T mariadb mysqladmin ping -h localhost --silent 2>/dev/null; then
+            # Try mariadb-admin first, fallback to mysqladmin
+            if docker compose -f docker-compose.test.yml exec -T mariadb mariadb-admin ping -h localhost --silent 2>/dev/null || \
+               docker compose -f docker-compose.test.yml exec -T mariadb mysqladmin ping -h localhost --silent 2>/dev/null; then
               echo "MariaDB is ready!"
               break
             fi
