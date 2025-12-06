@@ -163,7 +163,7 @@ jobs:
           echo "Waiting for Redis..."
           attempt=0
           while [ $attempt -lt $max_attempts ]; do
-            if docker compose -f docker-compose.test.yml exec -T redis_container redis-cli ping 2>/dev/null | grep -q PONG; then
+            if docker compose -f docker-compose.test.yml exec -T redis redis-cli ping 2>/dev/null | grep -q PONG; then
               echo "Redis is ready!"
               break
             fi
@@ -190,7 +190,7 @@ jobs:
           
           # Check Redis logs
           echo "--- Redis logs ---"
-          redis_logs=$(docker compose -f docker-compose.test.yml logs redis_container 2>&1 | tail -50)
+          redis_logs=$(docker compose -f docker-compose.test.yml logs redis 2>&1 | tail -50)
           echo "$redis_logs"
           
           # Check for Redis authentication errors
@@ -223,16 +223,22 @@ jobs:
         run: |
           echo "=== Testing Redis connection ==="
           
-          # Check if Redis is running
-          if ! docker compose -f docker-compose.test.yml ps redis_container | grep -q "Up"; then
+          # Check if Redis service is running (use service name, not container name)
+          echo "Checking Redis service status..."
+          docker compose -f docker-compose.test.yml ps
+          
+          # Check if Redis container exists and is running
+          if ! docker ps --format "{{.Names}}" | grep -q "^redis_container$"; then
             echo "✗ Redis container is not running!"
-            docker compose -f docker-compose.test.yml logs redis_container | tail -30
+            echo "All running containers:"
+            docker ps --format "table {{.Names}}\t{{.Status}}"
+            docker compose -f docker-compose.test.yml logs redis 2>&1 | tail -30 || true
             exit 1
           fi
           
           # Check Redis logs to see how it started
           echo "=== Redis startup logs ==="
-          docker compose -f docker-compose.test.yml logs redis_container | grep -iE "redis|password|starting" | tail -10 || true
+          docker compose -f docker-compose.test.yml logs redis 2>&1 | grep -iE "redis|password|starting|ready" | tail -10 || true
           
           # Read Redis password from docker.env for debugging
           if [ -f docker.env ]; then
@@ -244,7 +250,7 @@ jobs:
           echo "Attempting Redis connection (should work without password)..."
           
           set +e  # Don't exit on error
-          REDIS_RESPONSE=$(docker compose -f docker-compose.test.yml exec -T redis_container redis-cli ping 2>&1)
+          REDIS_RESPONSE=$(docker compose -f docker-compose.test.yml exec -T redis redis-cli ping 2>&1)
           REDIS_EXIT_CODE=$?
           set -e  # Exit on error again
           
@@ -259,10 +265,10 @@ jobs:
             echo ""
             echo "=== Checking Redis configuration ==="
             echo "Redis container environment:"
-            docker compose -f docker-compose.test.yml exec -T redis_container env | grep REDIS || true
+            docker compose -f docker-compose.test.yml exec -T redis env | grep REDIS || true
             echo ""
             echo "=== Redis logs (last 50 lines) ==="
-            docker compose -f docker-compose.test.yml logs redis_container | tail -50
+            docker compose -f docker-compose.test.yml logs redis 2>&1 | tail -50
             exit 1
           fi
 
