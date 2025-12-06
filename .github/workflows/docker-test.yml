@@ -282,7 +282,19 @@ jobs:
           fi
           
           # Test MariaDB connection
-          docker compose -f docker-compose.test.yml exec -T mariadb mysql -u hiddifypanel -p"$MYSQL_PASSWORD" -e "SELECT 1;" hiddifypanel
+          # Try 'mariadb' first (modern MariaDB images), fallback to 'mysql' if needed
+          if docker compose -f docker-compose.test.yml exec -T mariadb mariadb -u hiddifypanel -p"$MYSQL_PASSWORD" -e "SELECT 1;" hiddifypanel 2>/dev/null; then
+            echo "✓ MariaDB connection successful using 'mariadb' client!"
+          elif docker compose -f docker-compose.test.yml exec -T mariadb mysql -u hiddifypanel -p"$MYSQL_PASSWORD" -e "SELECT 1;" hiddifypanel 2>/dev/null; then
+            echo "✓ MariaDB connection successful using 'mysql' client!"
+          else
+            echo "✗ MariaDB connection failed!"
+            echo "Trying to find available MySQL client..."
+            docker compose -f docker-compose.test.yml exec -T mariadb which mariadb mysql 2>&1 || true
+            echo "Checking MariaDB logs..."
+            docker compose -f docker-compose.test.yml logs mariadb | tail -20
+            exit 1
+          fi
 
       - name: Check hiddify-panel health
         run: |
