@@ -6,6 +6,38 @@ command -v docker &>/dev/null || curl -fsSL https://get.docker.com | sh
 # Set the default tag if not provided
 TAG=${1:-latest}
 
+# Function to detect the branch from which the script is being run
+detect_branch() {
+    local branch="main"  # Default branch
+    
+    # Try to detect branch from git repository
+    if command -v git &>/dev/null; then
+        # Check if we're in a git repository
+        if git rev-parse --git-dir &>/dev/null; then
+            # Get current branch
+            local current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+            if [ -n "$current_branch" ] && [ "$current_branch" != "HEAD" ]; then
+                branch="$current_branch"
+                echo "Detected branch from git repository: $branch" >&2
+            fi
+        fi
+    fi
+    
+    # Try to detect branch from script URL (if downloaded via curl)
+    # Check if script was downloaded from a specific branch URL
+    if [ -n "$SCRIPT_SOURCE_URL" ]; then
+        if echo "$SCRIPT_SOURCE_URL" | grep -qE '/blob/([^/]+)/|/tree/([^/]+)/'; then
+            local url_branch=$(echo "$SCRIPT_SOURCE_URL" | sed -nE 's|.*/(blob|tree)/([^/]+)/.*|\2|p' | head -1)
+            if [ -n "$url_branch" ]; then
+                branch="$url_branch"
+                echo "Detected branch from script URL: $branch" >&2
+            fi
+        fi
+    fi
+    
+    echo "$branch"
+}
+
 # Check if the 'hiddify-manager' folder exists
 if [ -d "hiddify-manager" ]; then
     echo 'Folder "hiddify-manager" already exists. Please change the directory to install with Docker.'
@@ -25,8 +57,13 @@ else
   # Create the 'hiddify-manager' directory
   mkdir hiddify-manager
   cd hiddify-manager
-  # Use dev branch for docker-compose.yml to get latest fixes
-  wget https://raw.githubusercontent.com/RioTwWks/Hiddify-Manager/refs/heads/dev/docker-compose.yml
+  
+  # Detect branch automatically
+  DETECTED_BRANCH=$(detect_branch)
+  echo "Using branch: $DETECTED_BRANCH for docker-compose.yml"
+  
+  # Download docker-compose.yml from the detected branch
+  wget https://raw.githubusercontent.com/RioTwWks/Hiddify-Manager/refs/heads/$DETECTED_BRANCH/docker-compose.yml
 fi
 
 # Generate random passwords for MySQL and Redis
