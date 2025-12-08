@@ -4,7 +4,7 @@
 
 
 
-[**![Lang_farsi](https://user-images.githubusercontent.com/125398461/234186932-52f1fa82-52c6-417f-8b37-08fe9250a55f.png) &nbsp;فارسی**](README_fa.md)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**简体中文 🇨🇳**](README_cn.md)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**English 🇺🇸**](README.md)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![](https://img.shields.io/badge/%20Wiki-Page-808080?style=flat-square)](https://github.com/hiddify/hiddify-manager/wiki)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![](https://img.shields.io/badge/FAQ-Here-512DA8?style=flat-square&logo=Favro)](https://github.com/hiddify/hiddify-manager/discussions/categories/q-a-%D8%B3%D9%88%D8%A7%D9%84%D8%A7%D8%AA-%D8%B1%D8%A7%DB%8C%D8%AC)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![](https://img.shields.io/badge/Report-Bugs-F67909?style=flat-square&logo=Open-Bug-Bounty)](https://github.com/hiddify/hiddify-manager/issues)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[**![Lang_farsi](https://user-images.githubusercontent.com/125398461/234186932-52f1fa82-52c6-417f-8b37-08fe9250a55f.png) &nbsp;فارسی**](README_fa.md)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**简体中文 🇨🇳**](README_cn.md)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**English 🇺🇸**](README.md)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![](https://img.shields.io/badge/%20Wiki-Page-808080?style=flat-square)](https://github.com/RioTwWks/Hiddify-Manager/wiki)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![](https://img.shields.io/badge/FAQ-Here-512DA8?style=flat-square&logo=Favro)](https://github.com/RioTwWks/Hiddify-Manager/discussions/categories/q-a-%D8%B3%D9%88%D8%A7%D9%84%D8%A7%D8%AA-%D8%B1%D8%A7%DB%8C%D8%AC)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![](https://img.shields.io/badge/Report-Bugs-F67909?style=flat-square&logo=Open-Bug-Bounty)](https://github.com/RioTwWks/Hiddify-Manager/issues)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </div>
 <br>
 <div align=center markdown="1">
@@ -23,7 +23,7 @@
 
 
 
- [![Downloads](https://static.pepy.tech/badge/hiddifypanel?style=flat-square)](https://github.com/hiddify/hiddify-manager/releases)[![Last Version](https://img.shields.io/github/release/hiddify/hiddify-manager/all.svg?style=flat-square)](https://github.com/hiddify/hiddify-manager/)[![Last Release Date](https://img.shields.io/github/release-date/hiddify/hiddify-manager.svg?style=flat-square)](https://github.com/hiddify/hiddify-manager/)[![commits](https://img.shields.io/github/commit-activity/m/hiddify/hiddify-manager?style=flat-square)](https://github.com/hiddify/hiddify-manager/) [![Youtube](https://img.shields.io/youtube/channel/views/UCxrmeMvVryNfB4XL35lXQNg?label=Youtube&style=flat-square&logo=youtube)](https://www.youtube.com/@hiddify)[![Telegram Channel](https://img.shields.io/endpoint?label=Channel&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fhiddify&color=blue)](https://telegram.dog/hiddify)[![Telegram Group](https://img.shields.io/endpoint?color=neon&label=Support%20Group&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fhiddify_board)](https://telegram.dog/hiddify_board/5)
+ [![Downloads](https://static.pepy.tech/badge/hiddifypanel?style=flat-square)](https://github.com/RioTwWks/Hiddify-Manager/releases)[![Last Version](https://img.shields.io/github/release/RioTwWks/Hiddify-Manager/all.svg?style=flat-square)](https://github.com/RioTwWks/Hiddify-Manager/)[![Last Release Date](https://img.shields.io/github/release-date/RioTwWks/Hiddify-Manager.svg?style=flat-square)](https://github.com/RioTwWks/Hiddify-Manager/)[![commits](https://img.shields.io/github/commit-activity/m/RioTwWks/Hiddify-Manager?style=flat-square)](https://github.com/RioTwWks/Hiddify-Manager/) [![Youtube](https://img.shields.io/youtube/channel/views/UCxrmeMvVryNfB4XL35lXQNg?label=Youtube&style=flat-square&logo=youtube)](https://www.youtube.com/@hiddify)[![Telegram Channel](https://img.shields.io/endpoint?label=Channel&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fhiddify&color=blue)](https://telegram.dog/hiddify)[![Telegram Group](https://img.shields.io/endpoint?color=neon&label=Support%20Group&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fhiddify_board)](https://telegram.dog/hiddify_board/5)
 
  </div>
 
@@ -161,7 +161,7 @@ Hiddify был протестирован на Ubuntu 22.04. Ubuntu Arm64 или
 
 </div>
 
-Мы также нуждаемся в финансовой поддержке для предоставления наших услуг. Вся наша деятельность осуществляется на добровольных началах, и финансовая поддержка будет направлена на развитие проекта. Адреса для оказания поддержки можно посмотреть [здесь](https://github.com/hiddify/hiddify-manager/wiki/support).
+Мы также нуждаемся в финансовой поддержке для предоставления наших услуг. Вся наша деятельность осуществляется на добровольных началах, и финансовая поддержка будет направлена на развитие проекта. Адреса для оказания поддержки можно посмотреть [здесь](https://github.com/RioTwWks/Hiddify-Manager/wiki/support).
 
 
 ## Сотрудничество и контактная информация
@@ -187,7 +187,7 @@ Hiddify был протестирован на Ubuntu 22.04. Ubuntu Arm64 или
 <p align=center>Мы благодарны всем, кто принимает участие в этом проекте. Некоторые люди отмечены ниже, а многие другие помогли нам за пределами Github. Это очень много значит для нас. ♥</p>
 
 <p align=center> 
-<a href="https://github.com/hiddify/hiddify-manager/graphs/contributors">
+<a href="https://github.com/RioTwWks/Hiddify-Manager/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=hiddify/hiddify-manager" />
 </a>
 </p>

@@ -1,6 +1,7 @@
 
 bash disable.sh
-if [ -d "{{hconfigs['telegram_lib']}}" ];then 
-    cd {{hconfigs['telegram_lib']}} && bash run.sh
+# Only Python version is supported
+if [ -d "python" ];then 
+    cd python && bash run.sh
 fi
 
