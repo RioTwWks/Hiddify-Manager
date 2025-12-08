@@ -76,8 +76,20 @@ def render(template_path):
 
         input_stat = os.stat(template_path)
         os.chmod(output_file_path, input_stat.st_mode)
-        # os.chmod(output_file_path, 0o600)
-        os.chown(output_file_path, input_stat.st_uid, input_stat.st_gid)
+        
+        # Special handling for mtg.toml - set ownership to tgproxy user
+        if "mtg.toml" in output_file_path:
+            try:
+                import pwd
+                tgproxy_uid = pwd.getpwnam("tgproxy").pw_uid
+                tgproxy_gid = pwd.getpwnam("tgproxy").pw_gid
+                os.chown(output_file_path, tgproxy_uid, tgproxy_gid)
+                os.chmod(output_file_path, 0o600)  # Ensure secure permissions
+            except (KeyError, OSError):
+                # tgproxy user doesn't exist yet, use default ownership
+                os.chown(output_file_path, input_stat.st_uid, input_stat.st_gid)
+        else:
+            os.chown(output_file_path, input_stat.st_uid, input_stat.st_gid)
     except Exception as e:
         print(f"Error rendering {template_path}: {e}", file=sys.stderr)
         traceback.print_exc(file = sys.stderr)

@@ -4,6 +4,11 @@ echo "telegram proxy install.sh $*"
 systemctl kill mtproxy.service >/dev/null 2>&1
 systemctl disable mtproxy.service >/dev/null 2>&1
 
+# Create tgproxy user if it doesn't exist
+if ! id -u tgproxy >/dev/null 2>&1; then
+    useradd --no-create-home -s /usr/sbin/nologin tgproxy || true
+fi
+
 # sudo add-apt-repository -y ppa:longsleep/golang-backports
 # sudo apt update
 # apt install -y make golang

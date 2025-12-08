@@ -2,3 +2,9 @@ log
 dump.rdb
 hiddify_usages.json
 docker-data
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
